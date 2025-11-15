@@ -1,0 +1,3 @@
+fastapi
+uvicorn[standard]
+# add fastf1,pandas,etc. later when implementing

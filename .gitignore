@@ -1,0 +1,14 @@
+# Node and Python artifacts
+node_modules/
+PitSynapse/node_modules/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+env/
+
+# Editor
+.vscode/
+.idea/
