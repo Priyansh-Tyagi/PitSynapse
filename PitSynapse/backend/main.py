@@ -1,16 +1,20 @@
-# paste the content here
-# backend/main.py
 from fastapi import FastAPI
-from .services import simulation_runner
+from fastapi.middleware.cors import CORSMiddleware
+from routes.simulation import router as simulation_router
 
-from backend.routes.simulation import app as simulation_app
+app = FastAPI(title="PitSynapse Backend", version="0.1.0")
 
-app = FastAPI(title="PitSynapse API")
+# CORS (frontend at localhost:5173)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-# Register routes
-app.include_router(simulation_runner, prefix="/simulation")
+app.include_router(simulation_router)
 
-# Optional root endpoint
-@app.get("/")
-def root():
-    return {"message": "PitSynapse backend running"}
+@app.get("/health")
+def health():
+    return {"status": "ok"}

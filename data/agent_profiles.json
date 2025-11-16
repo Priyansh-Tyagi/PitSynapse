@@ -1,0 +1,64 @@
+{
+  "profiles": [
+    {
+      "id": "aggressive_overtaker",
+      "name": "Aggressive Overtaker",
+      "aggression": 0.9,
+      "risk": 0.85,
+      "tyre_management": 0.4,
+      "pit_bias": 0.3,
+      "weather_sensitivity": 0.6,
+      "personality": "Pushes hard for overtakes and track position. Lives by the motto 'you miss 100% of the overtakes you don't attempt.' Prefers staying out longer to maintain track position even at the cost of tyre life."
+    },
+    {
+      "id": "conservative_strategist",
+      "name": "Conservative Strategist",
+      "aggression": 0.3,
+      "risk": 0.25,
+      "tyre_management": 0.9,
+      "pit_bias": 0.7,
+      "weather_sensitivity": 0.8,
+      "personality": "Prioritizes consistency and tyre preservation over risky moves. Always has a backup plan and pits early to avoid degradation penalties. Thrives in changing conditions by making proactive strategic calls."
+    },
+    {
+      "id": "balanced_racer",
+      "name": "Balanced Racer",
+      "aggression": 0.55,
+      "risk": 0.5,
+      "tyre_management": 0.65,
+      "pit_bias": 0.5,
+      "weather_sensitivity": 0.5,
+      "personality": "Adaptable all-rounder who reads the race and adjusts strategy dynamically. Makes calculated moves when opportunities arise but knows when to play it safe. The Swiss Army knife of racing agents."
+    },
+    {
+      "id": "tyre_whisperer",
+      "name": "Tyre Whisperer",
+      "aggression": 0.4,
+      "risk": 0.35,
+      "tyre_management": 0.95,
+      "pit_bias": 0.4,
+      "weather_sensitivity": 0.55,
+      "personality": "Master of extracting maximum life from tyres through smooth driving and perfect brake modulation. Can stretch stints beyond what seems possible, often gaining positions through fewer pit stops."
+    },
+    {
+      "id": "chaos_opportunist",
+      "name": "Chaos Opportunist",
+      "aggression": 0.75,
+      "risk": 0.8,
+      "tyre_management": 0.5,
+      "pit_bias": 0.6,
+      "weather_sensitivity": 0.9,
+      "personality": "Thrives in unpredictable conditions and capitalizes on safety cars and weather changes. Makes bold strategy calls that either pay off spectacularly or backfire dramatically. Fortune favors the brave."
+    },
+    {
+      "id": "data_driven_optimizer",
+      "name": "Data-Driven Optimizer",
+      "aggression": 0.5,
+      "risk": 0.4,
+      "tyre_management": 0.75,
+      "pit_bias": 0.65,
+      "weather_sensitivity": 0.7,
+      "personality": "Relies on telemetry and predictive modeling to make optimal decisions. Minimizes variance through mathematical precision and rarely makes emotional calls. Wins through perfect execution and timing."
+    }
+  ]
+}
