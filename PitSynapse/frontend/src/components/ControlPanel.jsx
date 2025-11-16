@@ -34,73 +34,86 @@ export default function ControlPanel({ onStart }) {
   };
 
   return (
-    <div className="bg-gray-800 text-white p-6 rounded-lg shadow-xl border border-gray-700 space-y-5 w-full max-w-2xl">
-      <h2 className="text-2xl font-bold mb-4 text-center text-yellow-400">🎮 Simulation Controls</h2>
+    <div className="bg-gradient-to-br from-slate-800/95 to-slate-900/95 text-white p-8 rounded-2xl shadow-2xl border-2 border-yellow-500/30 backdrop-blur-sm w-full max-w-3xl card-hover">
+      <h2 className="text-3xl font-black mb-6 text-center gradient-text flex items-center justify-center gap-3">
+        <span className="text-4xl">🎮</span>
+        Simulation Controls
+      </h2>
 
-      {/* Total Laps Slider */}
-      <div>
-        <label className="block mb-2 font-semibold text-lg">
-          Total Laps: <span className="text-yellow-400">{totalLaps}</span>
-        </label>
-        <input
-          type="range"
-          min={1}
-          max={100}
-          step={1}
-          value={totalLaps}
-          onChange={(e) => setTotalLaps(Number(e.target.value))}
-          className="w-full h-3 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-yellow-500"
-        />
-        <div className="flex justify-between text-xs text-gray-400 mt-1">
-          <span>1</span>
-          <span>50</span>
-          <span>100</span>
+      <div className="space-y-6">
+        {/* Total Laps Slider */}
+        <div className="bg-slate-800/50 p-6 rounded-xl border border-slate-700/50">
+          <label className="block mb-3 font-bold text-lg flex items-center justify-between">
+            <span>Total Laps</span>
+            <span className="text-yellow-400 text-2xl font-black">{totalLaps}</span>
+          </label>
+          <input
+            type="range"
+            min={1}
+            max={100}
+            step={1}
+            value={totalLaps}
+            onChange={(e) => setTotalLaps(Number(e.target.value))}
+            className="w-full h-4 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-yellow-500 slider"
+            style={{
+              background: `linear-gradient(to right, #fbbf24 0%, #fbbf24 ${(totalLaps/100)*100}%, #475569 ${(totalLaps/100)*100}%, #475569 100%)`
+            }}
+          />
+          <div className="flex justify-between text-xs text-gray-400 mt-2">
+            <span>1</span>
+            <span>50</span>
+            <span>100</span>
+          </div>
         </div>
-      </div>
 
-      {/* Weather Selection */}
-      <div>
-        <label className="block mb-2 font-semibold text-lg">Weather:</label>
-        <select
-          value={weather}
-          onChange={(e) => setWeather(e.target.value)}
-          className="w-full p-3 rounded-lg bg-gray-700 text-white border border-gray-600 focus:border-yellow-500 focus:outline-none text-lg"
+        {/* Weather Selection */}
+        <div className="bg-slate-800/50 p-6 rounded-xl border border-slate-700/50">
+          <label className="block mb-3 font-bold text-lg">Weather Conditions</label>
+          <select
+            value={weather}
+            onChange={(e) => setWeather(e.target.value)}
+            className="w-full p-4 rounded-xl bg-slate-700 text-white border-2 border-slate-600 focus:border-yellow-500 focus:outline-none text-lg font-semibold transition-all"
+          >
+            <option value="dry">☀️ Dry</option>
+            <option value="rain">🌧️ Rain</option>
+            <option value="mixed">🌦️ Mixed</option>
+          </select>
+        </div>
+
+        {/* Number of Agents */}
+        <div className="bg-slate-800/50 p-6 rounded-xl border border-slate-700/50">
+          <label className="block mb-3 font-bold text-lg flex items-center justify-between">
+            <span>Number of Agents</span>
+            <span className="text-blue-400 text-2xl font-black">{numAgents}</span>
+          </label>
+          <input
+            type="range"
+            min={2}
+            max={5}
+            step={1}
+            value={numAgents}
+            onChange={(e) => setNumAgents(Number(e.target.value))}
+            className="w-full h-4 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-blue-500"
+            style={{
+              background: `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${((numAgents-2)/(5-2))*100}%, #475569 ${((numAgents-2)/(5-2))*100}%, #475569 100%)`
+            }}
+          />
+          <div className="flex justify-between text-xs text-gray-400 mt-2">
+            <span>2</span>
+            <span>3</span>
+            <span>4</span>
+            <span>5</span>
+          </div>
+        </div>
+
+        {/* Start Simulation Button */}
+        <button
+          onClick={handleStart}
+          className="w-full bg-gradient-to-r from-yellow-500 via-yellow-400 to-orange-500 hover:from-yellow-600 hover:via-yellow-500 hover:to-orange-600 text-gray-900 font-black py-5 px-8 rounded-xl transition-all transform hover:scale-105 text-2xl shadow-2xl hover:shadow-yellow-500/50 border-2 border-yellow-300/50"
         >
-          <option value="dry">☀️ Dry</option>
-          <option value="rain">🌧️ Rain</option>
-          <option value="mixed">🌦️ Mixed</option>
-        </select>
+          🚀 Start Simulation
+        </button>
       </div>
-
-      {/* Number of Agents */}
-      <div>
-        <label className="block mb-2 font-semibold text-lg">
-          Number of Agents: <span className="text-yellow-400">{numAgents}</span>
-        </label>
-        <input
-          type="range"
-          min={2}
-          max={5}
-          step={1}
-          value={numAgents}
-          onChange={(e) => setNumAgents(Number(e.target.value))}
-          className="w-full h-3 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-blue-500"
-        />
-        <div className="flex justify-between text-xs text-gray-400 mt-1">
-          <span>2</span>
-          <span>3</span>
-          <span>4</span>
-          <span>5</span>
-        </div>
-      </div>
-
-      {/* Start Simulation Button */}
-      <button
-        onClick={handleStart}
-        className="w-full bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-gray-900 font-bold py-4 px-6 rounded-lg transition-all transform hover:scale-105 text-xl shadow-lg"
-      >
-        🚀 Start Simulation
-      </button>
     </div>
   );
 }

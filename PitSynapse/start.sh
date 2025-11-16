@@ -1,6 +1,8 @@
 #!/bin/bash
-# PitSynapse - One-Command Startup Script (Linux/Mac)
+# PitSynapse - One-Command Startup Script (Linux/Mac/Git Bash)
 # Run: ./start.sh or bash start.sh
+
+set -e  # Exit on error
 
 echo "========================================"
 echo "  PitSynapse - Starting Everything..."
@@ -11,13 +13,38 @@ echo ""
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd "$SCRIPT_DIR"
 
-# Check Python
-echo "[1/5] Checking Python..."
-if ! command -v python3 &> /dev/null; then
-    echo "  [ERROR] Python 3 not found! Please install Python 3.8+"
+# Check if we need to go into nested PitSynapse directory
+if [ -d "PitSynapse/backend" ]; then
+    echo "[INFO] Found nested directory structure, navigating..."
+    cd PitSynapse
+    SCRIPT_DIR="$PWD"
+fi
+
+# Verify backend exists
+if [ ! -d "backend" ]; then
+    echo "[ERROR] Backend directory not found!"
+    echo ""
+    echo "Current directory: $SCRIPT_DIR"
+    echo ""
+    echo "Please make sure you're running this from the PitSynapse root directory."
+    echo "The directory should contain both 'backend' and 'frontend' folders."
     exit 1
 fi
-echo "  [OK] Python found: $(python3 --version)"
+
+# Check Python
+echo "[1/5] Checking Python..."
+if ! command -v python3 &> /dev/null && ! command -v python &> /dev/null; then
+    echo "  [ERROR] Python not found! Please install Python 3.8+"
+    exit 1
+fi
+
+PYTHON_CMD="python3"
+if ! command -v python3 &> /dev/null; then
+    PYTHON_CMD="python"
+fi
+
+PYTHON_VERSION=$($PYTHON_CMD --version 2>&1)
+echo "  [OK] Python found: $PYTHON_VERSION"
 echo ""
 
 # Check Node.js
@@ -26,17 +53,19 @@ if ! command -v node &> /dev/null; then
     echo "  [ERROR] Node.js not found! Please install Node.js"
     exit 1
 fi
-echo "  [OK] Node.js found: $(node --version)"
+
+NODE_VERSION=$(node --version)
+echo "  [OK] Node.js found: $NODE_VERSION"
 echo ""
 
 # Install Python dependencies
 echo "[3/5] Installing Python dependencies..."
 cd "$SCRIPT_DIR/backend"
 if [ -f "requirements.txt" ]; then
-    pip3 install -q -r requirements.txt
+    $PYTHON_CMD -m pip install -q -r requirements.txt || true
     echo "  [OK] Python dependencies installed"
 else
-    echo "  [WARN] requirements.txt not found"
+    echo "  [WARN] requirements.txt not found, skipping..."
 fi
 cd "$SCRIPT_DIR"
 echo ""
@@ -45,10 +74,10 @@ echo ""
 echo "[4/5] Installing Node.js dependencies..."
 cd "$SCRIPT_DIR/frontend"
 if [ -f "package.json" ]; then
-    npm install --silent
+    npm install --silent 2>&1 | grep -v "npm WARN" || true
     echo "  [OK] Node.js dependencies installed"
 else
-    echo "  [WARN] package.json not found"
+    echo "  [WARN] package.json not found, skipping..."
 fi
 cd "$SCRIPT_DIR"
 echo ""
@@ -60,7 +89,7 @@ echo ""
 # Start backend in background
 echo "  Starting Backend Server..."
 cd "$SCRIPT_DIR/backend"
-python3 -m uvicorn main:app --host 0.0.0.0 --port 8000 > ../backend.log 2>&1 &
+$PYTHON_CMD -m uvicorn main:app --host 0.0.0.0 --port 8000 > ../backend.log 2>&1 &
 BACKEND_PID=$!
 cd "$SCRIPT_DIR"
 
@@ -76,7 +105,7 @@ cd "$SCRIPT_DIR"
 
 # Wait for servers
 echo ""
-echo "  Waiting for servers to start..."
+echo "  Waiting for servers to start (this may take 10-20 seconds)..."
 sleep 8
 
 # Check servers
@@ -107,9 +136,11 @@ echo "  Frontend PID: $FRONTEND_PID"
 echo ""
 echo "  To stop servers, run:"
 echo "    kill $BACKEND_PID $FRONTEND_PID"
+echo "  Or:"
+echo "    pkill -f uvicorn"
+echo "    pkill -f 'npm run dev'"
 echo "========================================"
 echo ""
 
 # Keep script running
 wait
-

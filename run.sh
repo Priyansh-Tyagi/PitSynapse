@@ -1,0 +1,2 @@
+#!/bin/bash
+cd PitSynapse/backend && python -m uvicorn main:app --port 8000 > ../backend.log 2>&1 & cd ../frontend && npm run dev > ../frontend.log 2>&1 & sleep 5 && echo "✅ Servers starting! Backend: http://localhost:8000, Frontend: http://localhost:5173" && (command -v start >/dev/null && start http://localhost:5173 || command -v xdg-open >/dev/null && xdg-open http://localhost:5173 || command -v open >/dev/null && open http://localhost:5173 || echo "Open http://localhost:5173 in your browser")
