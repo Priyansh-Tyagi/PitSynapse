@@ -2,7 +2,8 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field, validator
 import asyncio
 from typing import List, Dict, Any, Optional
-from ..services.simulation_runner import run_simulation
+
+from services.simulation_runner import run_simulation
 
 router = APIRouter()
 
@@ -11,11 +12,13 @@ router = APIRouter()
 # ============================================================
 
 class AgentSettings(BaseModel):
-    id: str
+    id: Optional[str] = None
+    name: Optional[str] = None
     aggression: float = Field(..., ge=0.0, le=1.0)
     risk_taking: float = Field(..., ge=0.0, le=1.0)
     tyre_management: float = Field(..., ge=0.0, le=1.0)
     pit_bias: float = Field(..., ge=0.0, le=1.0)
+    weather_sensitivity: Optional[float] = Field(default=0.5, ge=0.0, le=1.0)
 
 class RaceParams(BaseModel):
     total_laps: int = Field(..., ge=1, le=200)
@@ -53,6 +56,7 @@ class Summary(BaseModel):
 class SimulationResponse(BaseModel):
     timeline: List[TimelineEntry]
     summary: Summary
+    events: Optional[List[Dict[str, Any]]] = None
 
 
 # ============================================================
@@ -76,19 +80,18 @@ async def simulate(request: SimulationRequest):
         raise HTTPException(status_code=400, detail="At least one agent required.")
 
     try:
+        # Convert to dict format expected by run_simulation
+        race_params = request.race.dict()
+        agent_settings = [agent.dict() for agent in request.agents]
+        
         # Run CPU-heavy simulation off the main event loop
-        result = await asyncio.to_thread(run_simulation, request.race.dict(), [a.dict() for a in request.agents])
+        result = await asyncio.to_thread(run_simulation, race_params, agent_settings)
 
-        # Expected result structure:
-        # {
-        #   "timeline": [...],
-        #   "summary": {...}
-        # }
-
+        # Validate result structure
         if "timeline" not in result or "summary" not in result:
             raise ValueError("Simulation returned an invalid structure.")
 
-        return result
+        return SimulationResponse(**result)
 
     except Exception as e:
         raise HTTPException(

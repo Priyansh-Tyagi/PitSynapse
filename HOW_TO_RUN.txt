@@ -1,0 +1,43 @@
+========================================
+  PITSYNAPSE - ONE COMMAND STARTUP
+========================================
+
+EASIEST WAY TO RUN:
+
+Windows PowerShell:
+  .\start.ps1
+
+Windows Command Prompt:
+  start.bat
+
+Or just DOUBLE-CLICK:
+  start.bat
+
+========================================
+WHAT IT DOES:
+========================================
+
+1. Checks if Python and Node.js are installed
+2. Installs all dependencies automatically
+3. Starts backend server (port 8000)
+4. Starts frontend server (port 5173)
+5. Opens browser automatically
+
+That's it! Everything in one command!
+
+========================================
+AFTER RUNNING:
+========================================
+
+- Two new windows will open (backend and frontend)
+- Your browser will open to http://localhost:5173
+- You'll see the PitSynapse Dashboard
+
+========================================
+TO STOP:
+========================================
+
+Just close the two server windows (backend and frontend)
+
+========================================
+

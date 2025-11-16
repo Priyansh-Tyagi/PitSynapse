@@ -1,0 +1,92 @@
+===========================================
+EXACT COMMANDS TO RUN PITSYNAPSE LOCALLY
+===========================================
+
+IMPORTANT: You need TWO terminal windows open!
+
+===========================================
+TERMINAL 1 - BACKEND SERVER
+===========================================
+
+Step 1: Open PowerShell or Command Prompt
+
+Step 2: Navigate to project:
+cd C:\Users\priya\Downloads\PitSynapse\PitSynapse
+
+Step 3: Install Python packages (ONLY FIRST TIME):
+cd backend
+pip install -r requirements.txt
+cd ..
+
+Step 4: Start backend:
+python start_backend.py
+
+You should see:
+"Starting PitSynapse Backend Server..."
+"Server will be available at http://localhost:8000"
+
+KEEP THIS TERMINAL OPEN!
+
+===========================================
+TERMINAL 2 - FRONTEND SERVER
+===========================================
+
+Step 1: Open a NEW PowerShell or Command Prompt window
+
+Step 2: Navigate to frontend:
+cd C:\Users\priya\Downloads\PitSynapse\PitSynapse\frontend
+
+Step 3: Install Node packages (ONLY FIRST TIME):
+npm install
+
+Step 4: Start frontend:
+npm run dev
+
+You should see:
+"Local: http://localhost:5173/"
+
+KEEP THIS TERMINAL OPEN!
+
+===========================================
+STEP 3 - OPEN IN BROWSER
+===========================================
+
+Open your web browser and go to:
+http://localhost:5173
+
+You should see the PitSynapse Dashboard!
+
+===========================================
+TROUBLESHOOTING
+===========================================
+
+If backend won't start:
+- Make sure you're in: C:\Users\priya\Downloads\PitSynapse\PitSynapse
+- Try: python -m pip install -r backend/requirements.txt
+- Check for errors in terminal
+
+If frontend won't start:
+- Make sure you're in: C:\Users\priya\Downloads\PitSynapse\PitSynapse\frontend
+- Try: npm install (if you haven't already)
+- Check for errors in terminal
+
+If browser shows "Cannot connect":
+- Make sure BOTH terminals are running
+- Wait 10-20 seconds after starting
+- Check http://localhost:8000/health (should show {"status":"ok"})
+
+===========================================
+QUICK COPY-PASTE COMMANDS
+===========================================
+
+TERMINAL 1 (Backend):
+cd C:\Users\priya\Downloads\PitSynapse\PitSynapse
+python start_backend.py
+
+TERMINAL 2 (Frontend):
+cd C:\Users\priya\Downloads\PitSynapse\PitSynapse\frontend
+npm run dev
+
+BROWSER:
+http://localhost:5173
+

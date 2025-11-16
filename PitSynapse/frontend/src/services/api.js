@@ -1,9 +1,9 @@
 // src/services/api.js
 import axios from "axios";
 
-// Base Axios instance (optional: set default base URL)
+// Base Axios instance
 const apiClient = axios.create({
-  baseURL: "http://localhost:8000", // change if your FastAPI backend runs elsewhere
+  baseURL: "http://localhost:8000/api",
   headers: {
     "Content-Type": "application/json",
   },
@@ -13,13 +13,40 @@ const apiClient = axios.create({
  * Simulate Race
  * @param {Object} params - Simulation parameters
  * @param {number} params.totalLaps - Total laps
- * @param {number} params.weatherRandomness - Weather randomness (0-1)
- * @param {string} params.selectedAgent - Agent personality
- * @returns {Promise<{timeline: Array, summary: Object}>}
+ * @param {string} params.weather - Weather mode ("dry", "rain", "mixed")
+ * @param {Array} params.agents - Array of agent settings
+ * @returns {Promise<{data: Object, error: string|null}>}
  */
 export const simulateRace = async (params) => {
   try {
-    const response = await apiClient.post("/simulate", params);
+    // Transform frontend params to backend format
+    const requestBody = {
+      race: {
+        total_laps: params.totalLaps || 50,
+        weather: params.weather || "dry",
+        track_id: params.trackId || "default"
+      },
+      agents: params.agents || [
+        {
+          id: "agent_1",
+          name: "Aggressive Racer",
+          aggression: 0.9,
+          risk_taking: 0.85,
+          tyre_management: 0.4,
+          pit_bias: 0.3
+        },
+        {
+          id: "agent_2",
+          name: "Tyre Whisperer",
+          aggression: 0.4,
+          risk_taking: 0.35,
+          tyre_management: 0.95,
+          pit_bias: 0.4
+        }
+      ]
+    };
+    
+    const response = await apiClient.post("/simulate", requestBody);
     return { data: response.data, error: null, isLoading: false };
   } catch (err) {
     console.error("Simulation API error:", err);
@@ -28,7 +55,7 @@ export const simulateRace = async (params) => {
   }
 };
 
-// Convenience wrapper expected by the app: returns the response data or throws on error
+// Convenience wrapper
 export const startSimulation = async (params) => {
   const { data, error } = await simulateRace(params);
   if (error) throw new Error(error);

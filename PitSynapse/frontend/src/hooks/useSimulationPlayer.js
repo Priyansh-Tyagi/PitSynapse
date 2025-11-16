@@ -1,131 +1,119 @@
 // useSimulationPlayer.js
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 
-/*
-Expected timeline format (from backend):
-
-[
-  {
-    lap: 1,
-    agents: [
-      {
-        name: "VER",
-        position: 120.3,      // meters on track
-        lapProgress: 0.25,    // 0 → 1
-        tyre: 94,             // %
-        isPitting: false,
-        delta: 0.4,
-      },
-      ...
-    ]
-  },
-  ...
-]
-
-*/
-
-export default function useSimulationPlayer(timeline) {
-  const TICK_MS = 120; // speed of the simulation player
-  const [frameIndex, setFrameIndex] = useState(0);
-  const [agents, setAgents] = useState([]);
+/**
+ * Hook to play simulation timeline data.
+ * Transforms backend timeline format into frontend-friendly agent state.
+ */
+export default function useSimulationPlayer({ timeline, events }) {
+  const TICK_MS = 200; // Speed of simulation player (ms per frame)
   const [currentLap, setCurrentLap] = useState(1);
   const [isPlaying, setIsPlaying] = useState(false);
-
+  const [agents, setAgents] = useState([]);
+  
   const intervalRef = useRef(null);
-  const framesRef = useRef([]);
+  const lapIndexRef = useRef(0);
 
-  // --------------------------------------------
-  // STEP 1 — Convert Timeline → Frames
-  // --------------------------------------------
-  useEffect(() => {
-    if (!timeline || timeline.length === 0) return;
-
-    // Store deep-copied frames
-    framesRef.current = timeline.map((frame) => ({
-      lap: frame.lap,
-      agents: frame.agents.map((a) => ({ ...a })),
-    }));
-
-    // Reset playback
-    setFrameIndex(0);
-    setCurrentLap(timeline[0]?.lap || 1);
-    setAgents(timeline[0]?.agents || []);
-    setIsPlaying(false);
-
-    if (intervalRef.current) clearInterval(intervalRef.current);
+  // Transform timeline into per-lap agent states
+  const lapData = useMemo(() => {
+    if (!timeline || timeline.length === 0) return [];
+    
+    const lapMap = new Map();
+    
+    // Group timeline entries by lap
+    timeline.forEach(entry => {
+      const lap = entry.lap;
+      if (!lapMap.has(lap)) {
+        lapMap.set(lap, []);
+      }
+      lapMap.get(lap).push(entry);
+    });
+    
+    // Convert to array of lap states
+    return Array.from(lapMap.entries())
+      .map(([lapNum, entries]) => {
+        // Sort by position
+        const sorted = [...entries].sort((a, b) => a.position - b.position);
+        
+        // Create agent objects
+        const agents = sorted.map((entry, idx) => ({
+          id: entry.agent_id,
+          name: entry.agent_id,
+          position: entry.position,
+          lapTime: entry.lap_time,
+          tyreWear: entry.tyre_wear,
+          action: entry.action,
+          lap: lapNum,
+          totalLaps: Math.max(...timeline.map(e => e.lap))
+        }));
+        
+        return {
+          lap: lapNum,
+          agents: agents
+        };
+      })
+      .sort((a, b) => a.lap - b.lap);
   }, [timeline]);
 
-  // --------------------------------------------
-  // STEP 2 — Apply a single frame update
-  // --------------------------------------------
-  const applyFrame = useCallback((index) => {
-    const frames = framesRef.current;
-    if (!frames || frames.length === 0) return;
+  // Initialize
+  useEffect(() => {
+    if (lapData.length > 0) {
+      setCurrentLap(lapData[0].lap);
+      setAgents(lapData[0].agents);
+      lapIndexRef.current = 0;
+    }
+  }, [lapData]);
 
-    const frame = frames[index];
-    if (!frame) return;
-
-    // Update state
-    setAgents(frame.agents);
-    setCurrentLap(frame.lap);
-  }, []);
-
-  // --------------------------------------------
-  // STEP 3 — Play loop (120ms per frame)
-  // --------------------------------------------
+  // Play loop
   const play = useCallback(() => {
-    if (isPlaying) return;
-
+    if (isPlaying || lapData.length === 0) return;
+    
     setIsPlaying(true);
-
+    
     intervalRef.current = setInterval(() => {
-      setFrameIndex((prev) => {
-        const frames = framesRef.current;
-        if (!frames) return prev;
-
-        const next = prev + 1;
-
-        // END OF SIMULATION
-        if (next >= frames.length) {
-          clearInterval(intervalRef.current);
-          setIsPlaying(false);
-          return prev;
-        }
-
-        applyFrame(next);
-        return next;
-      });
+      lapIndexRef.current += 1;
+      
+      if (lapIndexRef.current >= lapData.length) {
+        // End of simulation
+        pause();
+        return;
+      }
+      
+      const lapState = lapData[lapIndexRef.current];
+      setCurrentLap(lapState.lap);
+      setAgents(lapState.agents);
     }, TICK_MS);
-  }, [isPlaying, applyFrame]);
+  }, [isPlaying, lapData]);
 
   const pause = useCallback(() => {
     setIsPlaying(false);
-    if (intervalRef.current) clearInterval(intervalRef.current);
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
   }, []);
 
   const reset = useCallback(() => {
     pause();
-    setFrameIndex(0);
-    setAgents(framesRef.current[0]?.agents || []);
-    setCurrentLap(framesRef.current[0]?.lap || 1);
-  }, [pause]);
+    lapIndexRef.current = 0;
+    if (lapData.length > 0) {
+      setCurrentLap(lapData[0].lap);
+      setAgents(lapData[0].agents);
+    }
+  }, [pause, lapData]);
 
-  // --------------------------------------------
-  // Cleanup on unmount
-  // --------------------------------------------
+  // Cleanup
   useEffect(() => {
     return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
     };
   }, []);
 
-  // --------------------------------------------
-  // RETURN API
-  // --------------------------------------------
   return {
     agents,
     currentLap,
-    frameIndex,
     isPlaying,
     play,
     pause,

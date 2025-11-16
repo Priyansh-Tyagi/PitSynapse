@@ -1,8 +1,54 @@
 {
-"aggressive": {},
-"conservative": {},
-"strategist": {},
-"adaptive": {},
-"risk_taker": {},
-"balanced": {}
+  "profiles": [
+    {
+      "id": "aggressive_overtaker",
+      "name": "Aggressive Overtaker",
+      "aggression": 0.9,
+      "risk": 0.85,
+      "risk_taking": 0.85,
+      "tyre_management": 0.4,
+      "pit_bias": 0.3,
+      "weather_sensitivity": 0.6
+    },
+    {
+      "id": "tyre_whisperer",
+      "name": "Tyre Whisperer",
+      "aggression": 0.4,
+      "risk": 0.35,
+      "risk_taking": 0.35,
+      "tyre_management": 0.95,
+      "pit_bias": 0.4,
+      "weather_sensitivity": 0.55
+    },
+    {
+      "id": "balanced_racer",
+      "name": "Balanced Racer",
+      "aggression": 0.55,
+      "risk": 0.5,
+      "risk_taking": 0.5,
+      "tyre_management": 0.65,
+      "pit_bias": 0.5,
+      "weather_sensitivity": 0.5
+    },
+    {
+      "id": "strategist",
+      "name": "Strategist",
+      "aggression": 0.5,
+      "risk": 0.4,
+      "risk_taking": 0.4,
+      "tyre_management": 0.7,
+      "pit_bias": 0.8,
+      "weather_sensitivity": 0.7
+    },
+    {
+      "id": "risk_taker",
+      "name": "Risk Taker",
+      "aggression": 0.85,
+      "risk": 0.9,
+      "risk_taking": 0.9,
+      "tyre_management": 0.3,
+      "pit_bias": 0.2,
+      "weather_sensitivity": 0.4
+    }
+  ]
 }
