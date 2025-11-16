@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import ControlPanel from "../components/ControlPanel";
 import TrackView from "../components/TrackView";
-import Leaderboard from "../components/Leaderboard";
+import LiveLeaderboard from "../components/LiveLeaderboard";
 import LapChart from "../components/LapChart";
 import TyreChart from "../components/Tyrechart";
 import EventLog from "../components/EventLog";
@@ -17,7 +17,7 @@ const Dashboard = () => {
   const [error, setError] = useState(null);
   const [summary, setSummary] = useState(null);
 
-  const { agents, currentLap, isPlaying, play, pause, reset } = useSimulationPlayer({
+  const { agents, currentLap, currentTime, isPlaying, play, pause, reset, totalLaps } = useSimulationPlayer({
     timeline,
     events
   });
@@ -45,7 +45,7 @@ const Dashboard = () => {
         setEvents(data.events || []);
         setSummary(data.summary || null);
         reset(); // Reset player to start
-        setTimeout(() => play(), 100); // Start playback after a brief delay
+        setTimeout(() => play(), 500); // Start playback after a brief delay
       }
     } catch (err) {
       setLoading(false);
@@ -78,120 +78,160 @@ const Dashboard = () => {
     };
   }, [timeline]);
 
+  // Format time
+  const formatTime = (ms) => {
+    const seconds = Math.floor(ms / 1000);
+    const minutes = Math.floor(seconds / 60);
+    return `${minutes}:${(seconds % 60).toString().padStart(2, '0')}`;
+  };
+
   return (
-    <div className="min-h-screen bg-gray-900 text-white p-4">
-      {/* Header */}
-      <div className="mb-6 text-center">
-        <h1 className="text-4xl font-bold mb-2 text-yellow-400">PitSynapse</h1>
-        <p className="text-gray-400 text-lg">Multi-Agent Race Simulation</p>
+    <div className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950 text-white">
+      {/* Header with animated background */}
+      <div className="relative overflow-hidden bg-gradient-to-r from-yellow-600 via-yellow-500 to-yellow-600 py-6 mb-8">
+        <div className="absolute inset-0 bg-black opacity-20"></div>
+        <div className="relative text-center">
+          <h1 className="text-5xl font-bold mb-2 text-white drop-shadow-lg">
+            🏎️ PitSynapse
+          </h1>
+          <p className="text-xl text-yellow-100 font-semibold">
+            Competitive Mobility Systems Simulator
+          </p>
+          <p className="text-sm text-yellow-200 mt-2">
+            Formula E • MotoGP • Drones • Supply Chain • Traffic Flow
+          </p>
+        </div>
       </div>
 
-      {/* Control Panel */}
-      <div className="mb-6 flex justify-center">
-        <ControlPanel onStart={runSimulation} />
+      <div className="container mx-auto px-4 pb-8">
+        {/* Control Panel */}
+        <div className="mb-6 flex justify-center">
+          <ControlPanel onStart={runSimulation} />
+        </div>
+
+        {/* Status Messages */}
+        {loading && (
+          <div className="mb-4 p-4 bg-yellow-900 border-2 border-yellow-600 rounded-lg text-center animate-pulse">
+            <p className="text-yellow-300 font-semibold text-lg">
+              ⏳ Running simulation... Please wait
+            </p>
+          </div>
+        )}
+        
+        {error && (
+          <div className="mb-4 p-4 bg-red-900 border-2 border-red-600 rounded-lg text-center">
+            <p className="text-red-300 font-semibold text-lg">❌ Error: {error}</p>
+          </div>
+        )}
+
+        {/* Summary Card */}
+        {summary && (
+          <div className="mb-6 p-6 bg-gradient-to-r from-gray-800 to-gray-700 border-2 border-gray-600 rounded-xl shadow-2xl">
+            <h2 className="text-2xl font-bold mb-4 text-yellow-400 flex items-center gap-2">
+              <span>🏁</span> Race Summary
+            </h2>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+              <div className="text-center">
+                <p className="text-gray-400 text-sm mb-1">Winner</p>
+                <p className="text-3xl font-bold text-yellow-400">{summary.winner}</p>
+              </div>
+              <div className="text-center">
+                <p className="text-gray-400 text-sm mb-1">Fastest Lap</p>
+                <p className="text-3xl font-bold">{summary.fastest_lap}s</p>
+              </div>
+              <div className="text-center">
+                <p className="text-gray-400 text-sm mb-1">Avg Tyre Wear</p>
+                <p className="text-3xl font-bold">{summary.avg_tyre_wear}%</p>
+              </div>
+              <div className="text-center">
+                <p className="text-gray-400 text-sm mb-1">Total Laps</p>
+                <p className="text-3xl font-bold">{totalLaps || 0}</p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Enhanced Playback Controls */}
+        {timeline.length > 0 && (
+          <div className="mb-6 p-4 bg-gray-800 rounded-xl border-2 border-gray-700">
+            <div className="flex items-center justify-center gap-4 flex-wrap">
+              <button
+                onClick={isPlaying ? pause : play}
+                className={`px-8 py-3 rounded-lg font-bold text-lg transition-all transform hover:scale-105 shadow-lg ${
+                  isPlaying
+                    ? "bg-red-600 hover:bg-red-700 text-white"
+                    : "bg-green-600 hover:bg-green-700 text-white"
+                }`}
+              >
+                {isPlaying ? "⏸ Pause" : "▶ Play"}
+              </button>
+              <button
+                onClick={reset}
+                className="px-8 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg font-bold text-lg transition-all transform hover:scale-105 shadow-lg text-white"
+              >
+                🔄 Reset
+              </button>
+              <div className="px-6 py-3 bg-gray-700 rounded-lg border-2 border-gray-600">
+                <div className="text-gray-400 text-sm">Current Lap</div>
+                <div className="font-bold text-2xl text-yellow-400">{currentLap} / {totalLaps}</div>
+              </div>
+              <div className="px-6 py-3 bg-gray-700 rounded-lg border-2 border-gray-600">
+                <div className="text-gray-400 text-sm">Race Time</div>
+                <div className="font-bold text-xl text-white">{formatTime(currentTime)}</div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Main Grid */}
+        {timeline.length > 0 ? (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Enhanced Track View */}
+            <div className="lg:col-span-2 bg-gray-800 rounded-xl p-6 border-2 border-gray-700 shadow-2xl">
+              <h2 className="text-2xl font-bold mb-4 text-yellow-400 flex items-center gap-2">
+                <span>📍</span> Live Track View
+              </h2>
+              <TrackView agents={agents} trackLength={1000} currentLap={currentLap} />
+            </div>
+
+            {/* Enhanced Live Leaderboard */}
+            <div className="bg-gray-800 rounded-xl p-6 border-2 border-gray-700 shadow-2xl">
+              <LiveLeaderboard agents={agents} events={events} />
+            </div>
+
+            {/* Charts */}
+            <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="bg-gray-800 rounded-xl p-6 border-2 border-gray-700 shadow-2xl">
+                <LapChart agents={chartData.agents} />
+              </div>
+              <div className="bg-gray-800 rounded-xl p-6 border-2 border-gray-700 shadow-2xl">
+                <TyreChart agents={chartData.agents} />
+              </div>
+            </div>
+
+            {/* Event Log */}
+            <div className="bg-gray-800 rounded-xl p-6 border-2 border-gray-700 shadow-2xl">
+              <h2 className="text-2xl font-bold mb-4 text-yellow-400 flex items-center gap-2">
+                <span>📋</span> Event Log
+              </h2>
+              <EventLog events={events} />
+            </div>
+          </div>
+        ) : (
+          <div className="text-center py-16 bg-gradient-to-br from-gray-800 to-gray-700 rounded-xl border-2 border-gray-600 shadow-2xl">
+            <div className="text-8xl mb-6">🚗</div>
+            <p className="text-3xl text-gray-300 mb-4 font-bold">Ready to Race!</p>
+            <p className="text-gray-400 text-lg">Configure your race above and click "Start Simulation"</p>
+            <div className="mt-8 flex justify-center gap-4 text-sm text-gray-500">
+              <span>🏎️ Formula E</span>
+              <span>🏍️ MotoGP</span>
+              <span>🚁 Drones</span>
+              <span>📦 Supply Chain</span>
+              <span>🚦 Traffic Flow</span>
+            </div>
+          </div>
+        )}
       </div>
-
-      {/* Status Messages */}
-      {loading && (
-        <div className="mb-4 p-4 bg-yellow-900 border border-yellow-600 rounded-lg text-center">
-          <p className="text-yellow-300 font-semibold">⏳ Simulation running... Please wait</p>
-        </div>
-      )}
-      
-      {error && (
-        <div className="mb-4 p-4 bg-red-900 border border-red-600 rounded-lg text-center">
-          <p className="text-red-300 font-semibold">❌ Error: {error}</p>
-        </div>
-      )}
-
-      {/* Summary */}
-      {summary && (
-        <div className="mb-4 p-4 bg-gray-800 border border-gray-700 rounded-lg">
-          <h2 className="text-xl font-bold mb-3 text-yellow-400">🏁 Race Summary</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div>
-              <p className="text-gray-400 text-sm">Winner</p>
-              <p className="text-2xl font-bold text-yellow-400">{summary.winner}</p>
-            </div>
-            <div>
-              <p className="text-gray-400 text-sm">Fastest Lap</p>
-              <p className="text-2xl font-bold">{summary.fastest_lap}s</p>
-            </div>
-            <div>
-              <p className="text-gray-400 text-sm">Avg Tyre Wear</p>
-              <p className="text-2xl font-bold">{summary.avg_tyre_wear}%</p>
-            </div>
-            <div>
-              <p className="text-gray-400 text-sm">Total Laps</p>
-              <p className="text-2xl font-bold">{timeline.length > 0 ? Math.max(...timeline.map(e => e.lap)) : 0}</p>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Playback Controls */}
-      {timeline.length > 0 && (
-        <div className="mb-4 flex justify-center gap-3">
-          <button
-            onClick={isPlaying ? pause : play}
-            className={`px-6 py-3 rounded-lg font-bold text-lg transition-colors ${
-              isPlaying
-                ? "bg-red-600 hover:bg-red-700"
-                : "bg-green-600 hover:bg-green-700"
-            }`}
-          >
-            {isPlaying ? "⏸ Pause" : "▶ Play"}
-          </button>
-          <button
-            onClick={reset}
-            className="px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg font-bold text-lg transition-colors"
-          >
-            🔄 Reset
-          </button>
-          <div className="px-6 py-3 bg-gray-800 rounded-lg">
-            <span className="text-gray-400">Lap: </span>
-            <span className="font-bold text-xl">{currentLap}</span>
-          </div>
-        </div>
-      )}
-
-      {/* Main Grid */}
-      {timeline.length > 0 ? (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          {/* Track View */}
-          <div className="lg:col-span-2 bg-gray-800 rounded-lg p-4 border border-gray-700">
-            <h2 className="text-xl font-bold mb-3 text-yellow-400">📍 Track View</h2>
-            <TrackView agents={agents} trackLength={1000} currentLap={currentLap} />
-          </div>
-
-          {/* Leaderboard */}
-          <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
-            <h2 className="text-xl font-bold mb-3 text-yellow-400">🏆 Leaderboard</h2>
-            <Leaderboard agents={agents} />
-          </div>
-
-          {/* Charts */}
-          <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
-              <LapChart agents={chartData.agents} />
-            </div>
-            <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
-              <TyreChart agents={chartData.agents} />
-            </div>
-          </div>
-
-          {/* Event Log */}
-          <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
-            <h2 className="text-xl font-bold mb-3 text-yellow-400">📋 Event Log</h2>
-            <EventLog events={events} />
-          </div>
-        </div>
-      ) : (
-        <div className="text-center py-12 bg-gray-800 rounded-lg border border-gray-700">
-          <p className="text-2xl text-gray-400 mb-4">🚗 Ready to Race!</p>
-          <p className="text-gray-500">Configure your race above and click "Start Simulation"</p>
-        </div>
-      )}
     </div>
   );
 };
